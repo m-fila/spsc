@@ -1,6 +1,11 @@
 include(GoogleTest)
 
-add_executable(spsc_tests queue_test.cpp)
+add_executable(
+  spsc_tests
+  next_power2_test.cpp
+  queue_test.cpp
+  counting_memory_resource.hpp
+)
 
 target_link_libraries(spsc_tests PRIVATE GTest::gtest_main spsc)
 target_compile_options(

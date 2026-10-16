@@ -53,12 +53,7 @@ inline static void BM(benchmark::State& state) {
 
 REGISTER_QUEUE_BENCHMARK(spsc::v1::queue);
 REGISTER_QUEUE_BENCHMARK(spsc::v2::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v2a::queue);
 REGISTER_QUEUE_BENCHMARK(spsc::v3::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v3a::queue);
 REGISTER_QUEUE_BENCHMARK(spsc::v4::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v4a::queue);
 REGISTER_QUEUE_BENCHMARK(spsc::v5::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v5a::queue);
-
-BENCHMARK_MAIN();
+REGISTER_QUEUE_BENCHMARK(spsc::v6::queue);

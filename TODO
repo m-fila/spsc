@@ -2,10 +2,7 @@
 
 ## Design
 
-- add explicit allocator
 - add try_emplace
-- support move only types
-- noexcept when copy/move assignment operator are noexcept
 - support non-default constructible types
 - support different APIs:
     - blocking/non-blocking
@@ -16,7 +13,7 @@
 
 - test non-power-of-two capacity when allowed
 - test that elements aren't stored with reference so wrapping doesn't overwrite them
-- test sequntial consistency with logger
+- test sequential consistency with logger
 
 ## Benchmarks
 

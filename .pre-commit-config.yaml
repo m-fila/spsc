@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: e2b496dc2bd8340c2524cb9a2d2a943cde1bb6df # frozen: v23.1.1
+    hooks:
+      - id: clang-format
+        types: [c++]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+  - repo: https://github.com/BlankSpruce/gersemi-pre-commit
+    rev: f1c4833f8cf23c6d952673abc73525411a5719e8 # frozen: 0.29.1
+    hooks:
+    - id: gersemi
+      args: ["-i"]

@@ -1,11 +1,11 @@
 include(GoogleTest)
 
-add_executable(spsc_queue_test queue_test.cpp)
+add_executable(spsc_tests queue_test.cpp)
 
-target_link_libraries(spsc_queue_test PRIVATE GTest::gtest_main spsc)
+target_link_libraries(spsc_tests PRIVATE GTest::gtest_main spsc)
 target_compile_options(
-  spsc_queue_test
+  spsc_tests
   PRIVATE -Wall -Werror -Wextra -Wno-interference-size
 )
 
-gtest_discover_tests(spsc_queue_test)
+gtest_discover_tests(spsc_tests)

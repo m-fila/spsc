@@ -57,6 +57,14 @@
             "cacheVariables": {
                 "SPSC_SANITIZER": "thread"
             }
+        },
+        {
+            "name": "benchmark",
+            "displayName": "Benchmark",
+            "inherits": "default",
+            "cacheVariables": {
+                "SPSC_BUILD_BENCHMARKS": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -83,6 +91,14 @@
         {
             "name": "tsan",
             "configurePreset": "tsan",
+            "jobs": 0
+        },
+        {
+            "name": "benchmark",
+            "configurePreset": "benchmark",
+            "targets": [
+                "bench"
+            ],
             "jobs": 0
         }
     ],
@@ -211,6 +227,20 @@
                 {
                     "type": "test",
                     "name": "tsan"
+                }
+            ]
+        },
+        {
+            "name": "benchmark",
+            "displayName": "Workflow (Benchmark)",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "benchmark"
+                },
+                {
+                    "type": "build",
+                    "name": "benchmark"
                 }
             ]
         }

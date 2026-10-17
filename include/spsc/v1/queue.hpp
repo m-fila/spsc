@@ -17,9 +17,7 @@ class queue {
     using value_type = T;
     using allocator_type = Allocator;
     static constexpr std::size_t max_capacity =
-        std::numeric_limits<std::size_t>::max() > 0
-            ? std::numeric_limits<std::size_t>::max() - 1
-            : 0;
+        std::numeric_limits<std::size_t>::max() - 1;
 
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());

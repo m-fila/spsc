@@ -35,7 +35,8 @@ target_sources(
         include/spsc/v3/queue.hpp
         include/spsc/v4/queue.hpp
         include/spsc/v5/queue.hpp
-        include/spsc/detail/next_power2.hpp
+        include/spsc/detail/bit.hpp
+        include/spsc/detail/macros.hpp
 )
 spsc_apply_sanitizer(spsc)
 add_library(SPSC::spsc ALIAS spsc)

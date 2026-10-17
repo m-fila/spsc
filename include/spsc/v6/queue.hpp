@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "spsc/detail/next_power2.hpp"
+#include "spsc/detail/bit.hpp"
 
 namespace spsc {
 namespace v6 {
@@ -22,7 +22,7 @@ class queue {
     using allocator_type = Allocator;
 
     static constexpr std::size_t max_capacity =
-        std::size_t{1} << (std::numeric_limits<std::size_t>::digits - 1);
+        detail::max_power2<std::size_t>();
 
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());
@@ -66,7 +66,7 @@ queue<T, Allocator>::queue(std::size_t capacity, const Allocator& allocator)
 
 template <typename T, typename Allocator>
 std::size_t queue<T, Allocator>::capacity() const noexcept {
-    return m_buffer.size();
+    return m_buffer.size() - 1;
 }
 
 template <typename T, typename Allocator>

@@ -2,7 +2,7 @@ include(GoogleTest)
 
 add_executable(
   spsc_tests
-  next_power2_test.cpp
+  bit_test.cpp
   queue_test.cpp
   counting_memory_resource.hpp
 )

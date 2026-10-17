@@ -18,9 +18,11 @@ cmake -S. -B build
 cmake --build build
 ```
 
-Option `-DINTERVIEW_USE_SYSTEM_LIBS=FALSE` can be used during configuration to build the project with system-installed GoogleTest instead of the one provided in `deps/googletest`.
+Option `-DSPSC_USE_SYSTEM_LIBS=FALSE` can be used during configuration to build the project with system-installed GoogleTest instead of the one provided in `deps/googletest`.
 
-Option `-DINTERVIEW_BUILD_TESTING=FALSE` can be used during configuration to disable building the tests.
+Option `-DSPSC_BUILD_TESTING=FALSE` can be used during configuration to disable building the tests.
+
+Option `-DSPSC_BUILD_BENCHMARKS=FALSE` can be used during configuration to disable building the benchmarks.
 
 ### Testing
 
@@ -37,12 +39,12 @@ This project provides a single-producer single-consumer queue implementation. To
 The following example shows a basic usage :
 
 ```cpp
-#include <spsc/queue.hpp>
+#include <spsc/spsc.hpp>
 #include <thread>
 #include <iostream>
 
 // Create a new queue
-SPSC::spsc<int> queue;
+spsc::queue<int> queue;
 
 // Producer
 std::thread producer([&queue]() {

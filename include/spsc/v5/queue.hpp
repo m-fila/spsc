@@ -13,7 +13,7 @@
 #include "spsc/detail/bit.hpp"
 
 namespace spsc {
-inline namespace v5 {
+namespace v5 {
 template <typename T, typename Allocator = std::allocator<T>>
 
 class queue {

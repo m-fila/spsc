@@ -30,6 +30,7 @@ target_sources(
       BASE_DIRS include/ "${CMAKE_CURRENT_BINARY_DIR}/include"
       FILES
         include/spsc/spsc.hpp
+        include/spsc/queue.hpp
         include/spsc/v1/queue.hpp
         include/spsc/v2/queue.hpp
         include/spsc/v3/queue.hpp

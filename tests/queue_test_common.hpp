@@ -180,27 +180,32 @@ TYPED_TEST_P(QueueTest, ST_PushPopCycleLvalueRef) {
     }
 }
 
-TYPED_TEST_P(QueueTest, MT_ProducerConsumer) {
-    using queue_type = TypeParam;
-    using item_type = typename queue_type::value_type;
-    auto q = queue_type(126);
-    const auto num_items = 1000;
+template <bool use_lvalue_push, typename Queue>
+void run_producer_consumer(Queue& queue, int num_items) {
+    using item_type = typename Queue::value_type;
 
     auto producer = std::thread([&]() {
-        for (int i = 0; i < num_items; ++i) {
-            while (!q.try_push(item_type{i})) {
-                // Busy wait until there's space
+        for (int item_index = 0; item_index < num_items; ++item_index) {
+            if constexpr (use_lvalue_push) {
+                auto input = item_type{item_index};
+                while (!queue.try_push(input)) {
+                    std::this_thread::yield();
+                }
+            } else {
+                while (!queue.try_push(item_type{item_index})) {
+                    std::this_thread::yield();
+                }
             }
         }
     });
 
     auto consumer = std::thread([&]() {
-        auto item = item_type{-1};
-        for (int i = 0; i < num_items; ++i) {
-            while (!q.try_pop(item)) {
-                // Busy wait until there's an item
+        auto output = item_type{-1};
+        for (int item_index = 0; item_index < num_items; ++item_index) {
+            while (!queue.try_pop(output)) {
+                std::this_thread::yield();
             }
-            ASSERT_EQ(item, item_type{i});
+            EXPECT_EQ(output, item_type{item_index});
         }
     });
 
@@ -208,45 +213,58 @@ TYPED_TEST_P(QueueTest, MT_ProducerConsumer) {
     consumer.join();
 }
 
+TYPED_TEST_P(QueueTest, MT_ProducerConsumer) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(126);
+    run_producer_consumer<false>(queue, 1000);
+}
+
 TYPED_TEST_P(QueueTest, MT_ProducerConsumerLvalueRef) {
     using queue_type = TypeParam;
-    using item_type = typename queue_type::value_type;
     if constexpr (std::is_copy_assignable_v<typename TypeParam::value_type>) {
-
-        auto q = queue_type(126);
-        const auto num_items = 1000;
-
-        auto producer = std::thread([&]() {
-            for (int i = 0; i < num_items; ++i) {
-                auto item = item_type{i};
-                while (!q.try_push(item)) {
-                    // Busy wait until there's space
-                }
-            }
-        });
-
-        auto consumer = std::thread([&]() {
-            auto item = item_type{-1};
-            for (int i = 0; i < num_items; ++i) {
-                while (!q.try_pop(item)) {
-                    // Busy wait until there's an item
-                }
-                ASSERT_EQ(item, item_type{i});
-            }
-        });
-
-        producer.join();
-        consumer.join();
+        auto queue = queue_type(126);
+        run_producer_consumer<true>(queue, 1000);
     }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(QueueTest, Capacity, ST_TryPopEmpty,
-                            ST_TryPushAndPop, ST_TryPushAndPopLvalueRef,
-                            ST_TryPopEmptyAfterPush, ST_TryPushFull,
-                            ST_FillThenEmpty, ST_WrapAround,
-                            ST_WrapAroundLvalueRef, ST_PushPopCycle,
-                            ST_PushPopCycleLvalueRef, MT_ProducerConsumer,
-                            MT_ProducerConsumerLvalueRef);
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerStress) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(126);
+    run_producer_consumer<false>(queue, 1'000'000);
+}
+
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerStressLvalueRef) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    if constexpr (std::is_copy_assignable_v<item_type>) {
+        auto queue = queue_type(126);
+        run_producer_consumer<true>(queue, 1'000'000);
+    }
+}
+
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerSmallCapacity) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(1);
+    run_producer_consumer<false>(queue, 10'000);
+}
+
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerSmallCapacityLvalueRef) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    if constexpr (std::is_copy_assignable_v<item_type>) {
+        auto queue = queue_type(1);
+        run_producer_consumer<true>(queue, 10'000);
+    }
+}
+
+REGISTER_TYPED_TEST_SUITE_P(
+    QueueTest, Capacity, ST_TryPopEmpty, ST_TryPushAndPop,
+    ST_TryPushAndPopLvalueRef, ST_TryPopEmptyAfterPush, ST_TryPushFull,
+    ST_FillThenEmpty, ST_WrapAround, ST_WrapAroundLvalueRef, ST_PushPopCycle,
+    ST_PushPopCycleLvalueRef, MT_ProducerConsumer, MT_ProducerConsumerLvalueRef,
+    MT_ProducerConsumerStress, MT_ProducerConsumerStressLvalueRef,
+    MT_ProducerConsumerSmallCapacity,
+    MT_ProducerConsumerSmallCapacityLvalueRef);
 
 template <typename T>
 class QueueAllocatorTest : public ::testing::Test {};

@@ -66,7 +66,7 @@ queue<T, Allocator>::queue(std::size_t capacity, const Allocator& allocator)
 
 template <typename T, typename Allocator>
 std::size_t queue<T, Allocator>::capacity() const noexcept {
-    return m_buffer.size() - 1;
+    return m_buffer.size();
 }
 
 template <typename T, typename Allocator>

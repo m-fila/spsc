@@ -108,10 +108,14 @@
             "configurePreset": "default",
             "output": {
                 "outputOnFailure": true
+            },
+            "execution": {
+                "jobs": 0
             }
         },
         {
             "name": "debug",
+            "inherits": "default",
             "configurePreset": "debug",
             "output": {
                 "outputOnFailure": true

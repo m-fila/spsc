@@ -2,8 +2,7 @@
 
 ## Design
 
-- add try_emplace
-- support non-default constructible types
+- support non-default constructible types, non-assignable types, add try_emplace
 - support different APIs:
     - blocking/non-blocking
     - exception/no-exception
@@ -11,8 +10,6 @@
 
 ## Tests
 
-- test non-power-of-two capacity when allowed
-- test that elements aren't stored with reference so wrapping doesn't overwrite them
 - test sequential consistency with logger
 
 ## Benchmarks

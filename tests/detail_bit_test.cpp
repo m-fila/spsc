@@ -1,9 +1,9 @@
-#include "spsc/detail/bit.hpp"
-
 #include <gtest/gtest.h>
 
 #include <cstddef>
 #include <cstdint>
+
+#include "spsc/detail/bit.hpp"
 
 TEST(DetailsBit, MaxPower2) {
     static_assert(spsc::detail::max_power2<std::uint8_t>() == 0x80);

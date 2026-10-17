@@ -45,9 +45,10 @@ inline static void BM(benchmark::State& state) {
 
 #define SPSC_REGISTER_QUEUE_BENCHMARK(queue_type) \
     BENCHMARK(BM<queue_type<int>>)                \
-        ->Args({100'000, 16})                     \
-        ->Args({100'000, 1'024})                  \
-        ->Args({100'000, 1'048'576})              \
+        ->Args({1'000, 1})                        \
+        ->Args({100'000, 15})                     \
+        ->Args({100'000, 1'023})                  \
+        ->Args({100'000, 1'048'575})              \
         ->ArgNames({"items", "capacity"})         \
         ->UseManualTime()                         \
         ->Unit(benchmark::kMillisecond)

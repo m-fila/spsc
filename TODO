@@ -8,10 +8,6 @@
     - exception/no-exception
 - close channel?
 
-## Tests
-
-- test sequential consistency with logger
-
 ## Benchmarks
 
 - benchmark separately push and pop

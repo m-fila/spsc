@@ -257,14 +257,82 @@ TYPED_TEST_P(QueueTest, MT_ProducerConsumerSmallCapacityLvalueRef) {
     }
 }
 
+template <bool use_lvalue_push, typename Queue>
+void run_cross_queue_worker(Queue& outgoing_queue, Queue& incoming_queue,
+                            int num_items) {
+    using item_type = typename Queue::value_type;
+    auto produced = 0;
+    auto consumed = 0;
+    auto item = item_type{-1};
+
+    while (produced < num_items || consumed < num_items) {
+        auto made_progress = false;
+        if (produced < num_items) {
+            if constexpr (use_lvalue_push) {
+                auto input = item_type{produced};
+                if (outgoing_queue.try_push(input)) {
+                    ++produced;
+                    made_progress = true;
+                }
+            } else if (outgoing_queue.try_push(item_type{produced})) {
+                ++produced;
+                made_progress = true;
+            }
+        }
+
+        if (consumed < num_items && incoming_queue.try_pop(item)) {
+            EXPECT_EQ(item, item_type{consumed});
+            ++consumed;
+            made_progress = true;
+        }
+
+        if (!made_progress) {
+            std::this_thread::yield();
+        }
+    }
+}
+
+TYPED_TEST_P(QueueTest, MT_CrossQueueProducerConsumer) {
+    using queue_type = TypeParam;
+    auto queueA = queue_type(8);
+    auto queueB = queue_type(3);
+    const auto num_items = 100'000;
+
+    auto first_thread = std::thread(
+        [&]() { run_cross_queue_worker<false>(queueA, queueB, num_items); });
+    auto second_thread = std::thread(
+        [&]() { run_cross_queue_worker<false>(queueB, queueA, num_items); });
+
+    first_thread.join();
+    second_thread.join();
+}
+
+TYPED_TEST_P(QueueTest, MT_CrossQueueProducerConsumerLvalueRef) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    if constexpr (std::is_copy_assignable_v<item_type>) {
+        auto queueA = queue_type(8);
+        auto queueB = queue_type(3);
+        const auto num_items = 100'000;
+
+        auto first_thread = std::thread(
+            [&]() { run_cross_queue_worker<true>(queueA, queueB, num_items); });
+        auto second_thread = std::thread(
+            [&]() { run_cross_queue_worker<true>(queueB, queueA, num_items); });
+
+        first_thread.join();
+        second_thread.join();
+    }
+}
+
 REGISTER_TYPED_TEST_SUITE_P(
     QueueTest, Capacity, ST_TryPopEmpty, ST_TryPushAndPop,
     ST_TryPushAndPopLvalueRef, ST_TryPopEmptyAfterPush, ST_TryPushFull,
     ST_FillThenEmpty, ST_WrapAround, ST_WrapAroundLvalueRef, ST_PushPopCycle,
     ST_PushPopCycleLvalueRef, MT_ProducerConsumer, MT_ProducerConsumerLvalueRef,
     MT_ProducerConsumerStress, MT_ProducerConsumerStressLvalueRef,
-    MT_ProducerConsumerSmallCapacity,
-    MT_ProducerConsumerSmallCapacityLvalueRef);
+    MT_ProducerConsumerSmallCapacity, MT_ProducerConsumerSmallCapacityLvalueRef,
+    MT_CrossQueueProducerConsumer, MT_CrossQueueProducerConsumerLvalueRef);
 
 template <typename T>
 class QueueAllocatorTest : public ::testing::Test {};

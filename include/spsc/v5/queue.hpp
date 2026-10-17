@@ -28,10 +28,12 @@ class queue {
 
     std::size_t capacity() const noexcept;
     bool try_push(const T& item) noexcept(std::is_nothrow_copy_assignable_v<T>);
-    bool try_push(T&& item) noexcept(std::is_nothrow_move_assignable_v<T> ||
-                                     std::is_nothrow_copy_assignable_v<T>);
-    bool try_pop(T& item) noexcept(std::is_nothrow_move_assignable_v<T> ||
-                                   std::is_nothrow_copy_assignable_v<T>);
+    bool try_push(T&& item) noexcept(
+        std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
+                                     : std::is_nothrow_copy_assignable_v<T>);
+    bool try_pop(T& item) noexcept(std::is_move_assignable_v<T>
+                                       ? std::is_nothrow_move_assignable_v<T>
+                                       : std::is_nothrow_copy_assignable_v<T>);
 
     private:
     std::vector<T, Allocator> m_buffer;
@@ -83,8 +85,8 @@ bool queue<T, Allocator>::try_push(const T& item) noexcept(
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) noexcept(
-    std::is_nothrow_move_assignable_v<T> ||
-    std::is_nothrow_copy_assignable_v<T>) {
+    std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
+                                 : std::is_nothrow_copy_assignable_v<T>) {
     const auto head = m_head.load(std::memory_order_relaxed);
     if (head - m_saved_tail == m_buffer.size()) {
         m_saved_tail = m_tail.load(std::memory_order_acquire);
@@ -92,11 +94,7 @@ bool queue<T, Allocator>::try_push(T&& item) noexcept(
             return false;
         }
     }
-    if constexpr (std::is_nothrow_move_assignable_v<T>) {
-        m_buffer[head & m_mask] = std::move(item);
-    } else if constexpr (std::is_nothrow_copy_assignable_v<T>) {
-        m_buffer[head & m_mask] = item;
-    } else if constexpr (std::is_move_assignable_v<T>) {
+    if constexpr (std::is_move_assignable_v<T>) {
         m_buffer[head & m_mask] = std::move(item);
     } else {
         m_buffer[head & m_mask] = item;
@@ -107,8 +105,8 @@ bool queue<T, Allocator>::try_push(T&& item) noexcept(
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_pop(T& item) noexcept(
-    std::is_nothrow_move_assignable_v<T> ||
-    std::is_nothrow_copy_assignable_v<T>) {
+    std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
+                                 : std::is_nothrow_copy_assignable_v<T>) {
     const auto tail = m_tail.load(std::memory_order_relaxed);
     if (m_saved_head == tail) {
         m_saved_head = m_head.load(std::memory_order_acquire);
@@ -116,11 +114,7 @@ bool queue<T, Allocator>::try_pop(T& item) noexcept(
             return false;
         }
     }
-    if constexpr (std::is_nothrow_move_assignable_v<T>) {
-        item = std::move(m_buffer[tail & m_mask]);
-    } else if constexpr (std::is_nothrow_copy_assignable_v<T>) {
-        item = m_buffer[tail & m_mask];
-    } else if constexpr (std::is_move_assignable_v<T>) {
+    if constexpr (std::is_move_assignable_v<T>) {
         item = std::move(m_buffer[tail & m_mask]);
     } else {
         item = m_buffer[tail & m_mask];

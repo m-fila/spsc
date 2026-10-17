@@ -1,10 +1,11 @@
+
+#pragma once
+
 #include <benchmark/benchmark.h>
 
 #include <cstddef>
 #include <stdexcept>
 #include <thread>
-
-#include "spsc/spsc.hpp"
 
 template <typename Queue>
 inline static void BM(benchmark::State& state) {
@@ -42,18 +43,11 @@ inline static void BM(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * n_iters);
 }
 
-#define REGISTER_QUEUE_BENCHMARK(queue_type) \
-    BENCHMARK(BM<queue_type<int>>)           \
-        ->Args({100'000, 16})                \
-        ->Args({100'000, 1'024})             \
-        ->Args({100'000, 1'048'576})         \
-        ->ArgNames({"items", "capacity"})    \
-        ->UseManualTime()                    \
+#define SPSC_REGISTER_QUEUE_BENCHMARK(queue_type) \
+    BENCHMARK(BM<queue_type<int>>)                \
+        ->Args({100'000, 16})                     \
+        ->Args({100'000, 1'024})                  \
+        ->Args({100'000, 1'048'576})              \
+        ->ArgNames({"items", "capacity"})         \
+        ->UseManualTime()                         \
         ->Unit(benchmark::kMillisecond)
-
-REGISTER_QUEUE_BENCHMARK(spsc::v1::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v2::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v3::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v4::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v5::queue);
-REGISTER_QUEUE_BENCHMARK(spsc::v6::queue);

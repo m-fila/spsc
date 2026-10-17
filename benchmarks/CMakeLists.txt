@@ -1,4 +1,14 @@
-add_executable(spsc_benchmarks queue_benchmark.cpp)
+add_executable(
+  spsc_benchmarks
+  # common files
+  queue_benchmark_common.hpp
+  # benchmarks
+  v1_queue_benchmark.cpp
+  v2_queue_benchmark.cpp
+  v3_queue_benchmark.cpp
+  v4_queue_benchmark.cpp
+  v5_queue_benchmark.cpp
+)
 target_link_libraries(spsc_benchmarks PRIVATE benchmark::benchmark_main spsc)
 target_compile_options(
   spsc_benchmarks

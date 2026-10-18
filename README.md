@@ -2,17 +2,23 @@
 
 Example implementation of a bounded single-producer single-consumer queue in C++17.
 
+This project contains several queue implementations (`spsc::v1::queue`,
+`spsc::v2::queue` etc.) that show successive stages of optimization and interface changes. For general
+use, prefer `spsc::queue` from `spsc/queue.hpp`; its default minimum-capacity
+policy uses the final implementation, `spsc::v7::queue`. The exact-capacity
+policy uses `spsc::v6::queue`.
+
 ## Features
 
-The library provides a bounded single-producer single-consumer queue. The queue was designed to be efficient and safe. The queue is implemented as a circular buffer with capacity fixed at construction time and cannot be changed afterwards. A compile-time policy can be used to select whether the queue's capacity will be exact to the requested size or rounded up to the next power of two. The capacity must be greater than zero and smaller or equal to `max_capacity`. The queue accepts an allocator to customize the memory allocation strategy.
+The library provides a bounded single-producer single-consumer queue. The queue was designed to be efficient and safe while staying generic enough to support a wide range of types. The queue is implemented as a circular buffer with capacity fixed at construction time and cannot be changed afterwards. A compile-time policy can be used to select whether the queue's capacity will be exact to the requested size or rounded up to the next power of two. The capacity must be greater than zero and smaller or equal to `max_capacity`. The queue accepts an allocator to customize the memory allocation strategy.
 
-The supported operations are `try_push` and `try_pop`, which are non-blocking and return immediately if the queue is full or empty, respectively, returning a boolean indicating success or failure.
+Items are appended at the back and removed from the front. `try_push(const T&)` copies an item into the queue and requires `T` to be copy-constructible; `try_push(T&&)` moves an item into the queue and requires `T` to be move-constructible. `emplace(args...)` constructs an item directly from the supplied arguments. Push and emplace return `false` when the queue is full.
 
-The operations are thread-safe when called concurrently from a single producer thread allowed to use `try_push` operations and a single consumer thread allowed to use `try_pop` operations. The queue must not be accessed from multiple producer or consumer threads.
+`try_pop()` returns a `std::optional<T>` containing the front item, or an empty optional when the queue is empty; it requires `T` to be move-constructible. `try_pop(T&)` moves the front item into the supplied object and returns `true`, or returns `false` when the queue is empty; it requires `T` to be move-assignable.
 
-The queue does not provide any closing mechanism, so the producer and consumer must externally coordinate the stopping of the queue. The queue does not provide any observer mechanism to indicate whether it is empty or full or to indicate the number of items in the queue. The queue provides a `capacity()` method to query the maximum number of items that can be stored in the queue which remains constant throughout the lifetime of the queue.
+Element construction or transfer can throw but should leave the elements in a valid state. If an operation throws, the queue indices are not advanced, so the queued item is not removed.
 
-The elements of the queue must be default-constructible and should be move-assignable. The assignment can throw but should leave the object in a valid state. The items left in the queue when it is destroyed will be destroyed as well.
+The queue supports one producer thread performing `try_push` or `emplace` concurrently with one consumer thread performing either `try_pop` overload. It does not support multiple producers or multiple consumers. The producer and consumer must externally coordinate shutdown; destroy the queue only after no thread can access it. The queue does not provide an observer for its current size or empty/full state. Its `capacity()` remains constant throughout its lifetime.
 
 ## Requirements
 

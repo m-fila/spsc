@@ -22,13 +22,19 @@ using queue_type = spsc::queue<T, std::allocator<T>, Policy>;
         queue_type<custom_tracked_type, spsc::capacity_policy::policy>>;      \
     INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Destruction, QueueDestructionTest, \
                                    prefix##DestructionTypes);                 \
-    using prefix##ThrowingTypes =                                             \
-        ::testing::Types<queue_type<custom_throwing_assign_type,              \
+    using prefix##EmplaceTypes =                                              \
+        ::testing::Types<queue_type<custom_move_constructible_only_type,      \
                                     spsc::capacity_policy::policy>>;          \
-    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Throwing, QueueThrowingTest,       \
-                                   prefix##ThrowingTypes)
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Emplace, QueueEmplaceTest,         \
+                                   prefix##EmplaceTypes);                     \
+    using prefix##ConstructionThrowTypes =                                    \
+        ::testing::Types<queue_type<custom_throwing_construct_type,           \
+                                    spsc::capacity_policy::policy>>;          \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##ConstructionThrowing,              \
+                                   QueueConstructionThrowTest,                \
+                                   prefix##ConstructionThrowTypes)
 
 SPSC_INSTANTIATE_QUEUE_W_POLICY_TESTS(queueCapacityExact, exact);
 SPSC_INSTANTIATE_QUEUE_W_POLICY_TESTS(queueCapacityMinimum, minimum);
 
-#undef SPSC_INSTANTIATE_QUEUE_TESTS
+#undef SPSC_INSTANTIATE_QUEUE_W_POLICY_TESTS

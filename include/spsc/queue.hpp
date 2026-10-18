@@ -1,7 +1,7 @@
 #pragma once
 
-#include "spsc/v4/queue.hpp"
-#include "spsc/v5/queue.hpp"
+#include "spsc/v6/queue.hpp"
+#include "spsc/v7/queue.hpp"
 
 namespace spsc {
 
@@ -15,39 +15,42 @@ enum class capacity_policy {
 
 /// \brief Single-producer single-consumer bounded queue
 ///
-/// \tparam T Element type of the queue. Must be default constructible and
-/// should be assignable for the push and pop operations to work correctly.
+/// \tparam T Element type of the queue.
 /// \tparam Allocator Allocator type for the queue.
 /// \tparam Policy Capacity policy for the queue.
 ///
 /// This queue is designed for single-producer single-consumer scenarios. It is
-/// a bounded queue, meaning it has a fixed capacity. The capacity can be
-/// specified at construction time, and the queue will not grow beyond this
-/// capacity. The queue supports two capacity policies: exact and minimum. The
-/// exact policy ensures that the queue has a fixed capacity exactly equal to
-/// the specified value, while the minimum policy allows the queue to have a
-/// fixed capacity at least equal to the specified value.
+/// a bounded queue, meaning that it has a fixed capacity. The capacity is
+/// fixed at construction. The exact policy uses the requested capacity; the
+/// minimum policy rounds it up to a power of two.
 ///
-/// The queue is implemented using a circular buffer. The queue is thread-safe
-/// for a single producer and a single consumer, meaning that one thread can
-/// safely push items into the queue while another thread pops items from the
-/// queue without additional synchronization.
+/// The queue supports one producer and one consumer accessing it concurrently.
+/// Items are appended at the back and removed from the front. The queue should
+/// not be destroyed while another thread is accessing it. The queue does not
+/// provide an observer for its current size or empty/full state.
+///
+/// `try_push(const T&)` requires copy-constructible T, and `try_push(T&&)`
+/// requires move-constructible T. `emplace(args...)` constructs an item from
+/// the supplied arguments. `try_pop()` returns an optional and requires
+/// move-constructible T; `try_pop(T&)` returns bool and requires
+/// move-assignable T. Push and emplace return immediately when the queue is
+/// full, and pop returns immediately when it is empty.
 template <typename T, typename Allocator = std::allocator<T>,
           capacity_policy Policy = capacity_policy::minimum>
 class queue;
 
 template <typename T, typename Allocator>
 class queue<T, Allocator, capacity_policy::exact>
-    : public v4::queue<T, Allocator> {
+    : public v6::queue<T, Allocator> {
     public:
-    using v4::queue<T, Allocator>::queue;
+    using v6::queue<T, Allocator>::queue;
 };
 
 template <typename T, typename Allocator>
 class queue<T, Allocator, capacity_policy::minimum>
-    : public v5::queue<T, Allocator> {
+    : public v7::queue<T, Allocator> {
     public:
-    using v5::queue<T, Allocator>::queue;
+    using v7::queue<T, Allocator>::queue;
 };
 
 }  // namespace spsc

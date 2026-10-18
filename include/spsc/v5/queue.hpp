@@ -18,6 +18,7 @@ namespace v5 {
 /// Based on v4 but uses power-of-two capacity and monotonic indices for
 /// mask-based indexing. The capacity will be automatically rounded up to the
 /// next power of two based on the specified value.
+/// Do not destroy the queue while another thread is accessing it.
 template <typename T, typename Allocator = std::allocator<T>>
 
 class queue {
@@ -27,12 +28,17 @@ class queue {
     static constexpr std::size_t max_capacity =
         detail::max_power2<std::size_t>();
 
+    /// Creates an empty queue with capacity rounded up to a power of two.
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());
 
+    /// Returns the usable queue capacity.
     std::size_t capacity() const noexcept;
+    /// Copies an item to the back; returns false if full.
     bool try_push(const T& item) noexcept(std::is_nothrow_copy_assignable_v<T>);
+    /// Moves an item to the back; returns false if full.
     bool try_push(T&& item) noexcept(std::is_nothrow_move_assignable_v<T>);
+    /// Moves the front item into item; returns false if empty.
     bool try_pop(T& item) noexcept(std::is_nothrow_move_assignable_v<T>);
 
     private:

@@ -28,16 +28,20 @@ class queue {
         std::numeric_limits<std::size_t>::max() - 1;
 
     /// Creates an empty queue with the requested capacity.
+    /// Requires default-constructible T.
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());
 
     /// Returns the usable queue capacity.
     std::size_t capacity() const noexcept;
     /// Copies an item to the back; returns false if full.
+    /// Requires copy-assignable T.
     bool try_push(const T& item) noexcept(std::is_nothrow_copy_assignable_v<T>);
     /// Moves an item to the back; returns false if full.
+    /// Requires move-assignable T.
     bool try_push(T&& item) noexcept(std::is_nothrow_move_assignable_v<T>);
     /// Moves the front item into item; returns false if empty.
+    /// Requires move-assignable T.
     bool try_pop(T& item) noexcept(std::is_nothrow_move_assignable_v<T>);
 
     private:

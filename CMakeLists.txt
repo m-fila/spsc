@@ -8,7 +8,7 @@ project(
 
 ## General options
 
-option(SPSC_BUILD_TESTING "Build the tests of SPSC" TRUE)
+option(SPSC_BUILD_TESTING "Enable building the tests of SPSC" TRUE)
 option(SPSC_BUILD_BENCHMARKS "Build the benchmarks of SPSC" TRUE)
 option(SPSC_BUILD_EXAMPLES "Build the examples of SPSC" TRUE)
 option(
@@ -16,7 +16,7 @@ option(
   "Use system libraries instead of building them as part of this project"
   FALSE
 )
-option(SPSC_INSTALL "Install the SPSC library" TRUE)
+option(SPSC_INSTALL "Enable installation of the SPSC library" TRUE)
 
 include(cmake/Sanitizers.cmake) # SPSC_SANITIZER option
 include(cmake/CompileOptions.cmake)

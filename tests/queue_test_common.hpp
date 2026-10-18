@@ -386,12 +386,98 @@ TYPED_TEST_P(QueueAllocatorTest, NoExtraAllocations) {
 REGISTER_TYPED_TEST_SUITE_P(QueueAllocatorTest, UsesProvidedAllocator,
                             NoExtraAllocations);
 
-#define SPSC_INSTANTIATE_QUEUE_TESTS(queue_template, prefix)              \
-    using QueueTypes =                                                    \
-        ::testing::Types<queue_template<int>,                             \
-                         queue_template<custom_move_only_type>>;          \
-    INSTANTIATE_TYPED_TEST_SUITE_P(prefix, QueueTest, QueueTypes);        \
-    using AllocatorQueueTypes = ::testing::Types<                         \
-        queue_template<int, std::pmr::polymorphic_allocator<int>>>;       \
-    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Allocator, QueueAllocatorTest, \
-                                   AllocatorQueueTypes)
+template <typename T>
+class QueueDestructionTest : public ::testing::Test {};
+
+TYPED_TEST_SUITE_P(QueueDestructionTest);
+
+TYPED_TEST_P(QueueDestructionTest, DestroysStoredElements) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    const auto baseline = custom_tracked_type::live_count.load();
+    {
+        auto q = queue_type(8);
+        auto item = item_type{-1};
+        for (int i = 0; i < 5; ++i) {
+            ASSERT_TRUE(q.try_push(item_type{i}));
+        }
+        ASSERT_TRUE(q.try_pop(item));
+        ASSERT_TRUE(q.try_pop(item));
+    }
+    EXPECT_EQ(custom_tracked_type::live_count.load(), baseline);
+}
+
+REGISTER_TYPED_TEST_SUITE_P(QueueDestructionTest, DestroysStoredElements);
+
+template <typename T>
+class QueueThrowingTest : public ::testing::Test {
+    protected:
+    void SetUp() override {
+        custom_throwing_assign_type::throw_on_assign = false;
+    }
+    void TearDown() override {
+        custom_throwing_assign_type::throw_on_assign = false;
+    }
+};
+
+TYPED_TEST_SUITE_P(QueueThrowingTest);
+
+TYPED_TEST_P(QueueThrowingTest, ThrowingPushLeavesQueueUsable) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    auto q = queue_type(4);
+    auto item = item_type{-1};
+
+    custom_throwing_assign_type::throw_on_assign = true;
+    EXPECT_THROW(q.try_push(item_type{1}), std::runtime_error);
+    const auto lvalue = item_type{2};
+    EXPECT_THROW(q.try_push(lvalue), std::runtime_error);
+    custom_throwing_assign_type::throw_on_assign = false;
+
+    // failed pushes must not publish anything
+    EXPECT_FALSE(q.try_pop(item));
+    ASSERT_TRUE(q.try_push(item_type{3}));
+    ASSERT_TRUE(q.try_pop(item));
+    EXPECT_EQ(item, 3);
+}
+
+TYPED_TEST_P(QueueThrowingTest, ThrowingPopLeavesQueueUsable) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    auto q = queue_type(4);
+    auto item = item_type{-1};
+    ASSERT_TRUE(q.try_push(item_type{1}));
+    ASSERT_TRUE(q.try_push(item_type{2}));
+
+    custom_throwing_assign_type::throw_on_assign = true;
+    EXPECT_THROW(q.try_pop(item), std::runtime_error);
+    custom_throwing_assign_type::throw_on_assign = false;
+    EXPECT_EQ(item, -1);
+
+    // the element must still be in the queue
+    ASSERT_TRUE(q.try_pop(item));
+    EXPECT_EQ(item, 1);
+    ASSERT_TRUE(q.try_pop(item));
+    EXPECT_EQ(item, 2);
+}
+
+REGISTER_TYPED_TEST_SUITE_P(QueueThrowingTest, ThrowingPushLeavesQueueUsable,
+                            ThrowingPopLeavesQueueUsable);
+
+#define SPSC_INSTANTIATE_QUEUE_TESTS(queue_template, prefix)                  \
+    using QueueTypes =                                                        \
+        ::testing::Types<queue_template<int>,                                 \
+                         queue_template<custom_move_only_type>>;              \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix, QueueTest, QueueTypes);            \
+    using AllocatorQueueTypes = ::testing::Types<                             \
+        queue_template<int, std::pmr::polymorphic_allocator<int>>>;           \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Allocator, QueueAllocatorTest,     \
+                                   AllocatorQueueTypes);                      \
+    using DestructionQueueTypes =                                             \
+        ::testing::Types<queue_template<custom_tracked_type>>;                \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Destruction, QueueDestructionTest, \
+                                   DestructionQueueTypes);                    \
+    using ThrowingQueueTypes =                                                \
+        ::testing::Types<queue_template<custom_throwing_assign_type>>;        \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Throwing, QueueThrowingTest,       \
+                                   ThrowingQueueTypes)

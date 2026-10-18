@@ -1,7 +1,7 @@
 #pragma once
 
-#include <atomic>
 #include <stdexcept>
+#include <utility>
 
 class custom_move_only_type {
     public:
@@ -134,21 +134,25 @@ class custom_copy_constructible_only_type {
 // Assignment throws while armed, leaving the target unchanged and valid.
 class custom_throwing_assign_type {
     public:
-    static inline bool throw_on_assign{false};
-
     custom_throwing_assign_type() noexcept = default;
-    explicit custom_throwing_assign_type(int value) noexcept : m_value(value) {}
+    explicit custom_throwing_assign_type(int value,
+                                         bool throw_on_assign = false) noexcept
+        : m_value(value), m_throw_on_assign(throw_on_assign) {}
     custom_throwing_assign_type(const custom_throwing_assign_type&) = default;
     custom_throwing_assign_type(custom_throwing_assign_type&&) = default;
+    void set_throw_on_assign(bool throw_on_assign) noexcept {
+        m_throw_on_assign = throw_on_assign;
+    }
+
     custom_throwing_assign_type& operator=(
         const custom_throwing_assign_type& other) {
-        maybe_throw();
+        maybe_throw(other);
         m_value = other.m_value;
         return *this;
     }
     custom_throwing_assign_type& operator=(
         custom_throwing_assign_type&& other) {
-        maybe_throw();
+        maybe_throw(other);
         m_value = std::move(other.m_value);
         return *this;
     }
@@ -169,32 +173,47 @@ class custom_throwing_assign_type {
     }
 
     private:
-    static void maybe_throw() {
-        if (throw_on_assign) {
+    void maybe_throw(const custom_throwing_assign_type& other) const {
+        if (m_throw_on_assign || other.m_throw_on_assign) {
             throw std::runtime_error("assignment failed");
         }
     }
 
     int m_value{0};
+    bool m_throw_on_assign{false};
 };
 
 // Move-only type counting live instances to detect undestroyed objects.
 class custom_tracked_type {
     public:
-    static inline std::atomic<int> live_count{0};
-
-    custom_tracked_type() noexcept { ++live_count; }
-    explicit custom_tracked_type(int value) noexcept : m_value(value) {
+    custom_tracked_type() noexcept = default;
+    custom_tracked_type(int value, int& live_count) noexcept
+        : m_value(value), m_live_count(&live_count) {
         ++live_count;
     }
     custom_tracked_type(const custom_tracked_type&) = delete;
     custom_tracked_type(custom_tracked_type&& other) noexcept
-        : m_value(other.m_value) {
-        ++live_count;
+        : m_value(other.m_value), m_live_count(other.m_live_count) {
+        if (m_live_count != nullptr) {
+            ++*m_live_count;
+        }
     }
     custom_tracked_type& operator=(const custom_tracked_type&) = delete;
-    custom_tracked_type& operator=(custom_tracked_type&&) noexcept = default;
-    ~custom_tracked_type() { --live_count; }
+    custom_tracked_type& operator=(custom_tracked_type&& other) noexcept {
+        m_value = other.m_value;
+        if (m_live_count == nullptr) {
+            m_live_count = other.m_live_count;
+            if (m_live_count != nullptr) {
+                ++*m_live_count;
+            }
+        }
+        return *this;
+    }
+    ~custom_tracked_type() {
+        if (m_live_count != nullptr) {
+            --*m_live_count;
+        }
+    }
 
     bool operator==(const custom_tracked_type& other) const {
         return m_value == other.m_value;
@@ -213,4 +232,5 @@ class custom_tracked_type {
 
     private:
     int m_value{0};
+    int* m_live_count{nullptr};
 };

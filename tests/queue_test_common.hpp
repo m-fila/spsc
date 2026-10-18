@@ -394,31 +394,23 @@ TYPED_TEST_SUITE_P(QueueDestructionTest);
 TYPED_TEST_P(QueueDestructionTest, DestroysStoredElements) {
     using queue_type = TypeParam;
     using item_type = typename queue_type::value_type;
-    const auto baseline = custom_tracked_type::live_count.load();
+    int live_count = 0;
     {
         auto q = queue_type(8);
-        auto item = item_type{-1};
+        auto item = item_type{-1, live_count};
         for (int i = 0; i < 5; ++i) {
-            ASSERT_TRUE(q.try_push(item_type{i}));
+            ASSERT_TRUE(q.try_push(item_type{i, live_count}));
         }
         ASSERT_TRUE(q.try_pop(item));
         ASSERT_TRUE(q.try_pop(item));
     }
-    EXPECT_EQ(custom_tracked_type::live_count.load(), baseline);
+    EXPECT_EQ(live_count, 0);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(QueueDestructionTest, DestroysStoredElements);
 
 template <typename T>
-class QueueThrowingTest : public ::testing::Test {
-    protected:
-    void SetUp() override {
-        custom_throwing_assign_type::throw_on_assign = false;
-    }
-    void TearDown() override {
-        custom_throwing_assign_type::throw_on_assign = false;
-    }
-};
+class QueueThrowingTest : public ::testing::Test {};
 
 TYPED_TEST_SUITE_P(QueueThrowingTest);
 
@@ -428,11 +420,12 @@ TYPED_TEST_P(QueueThrowingTest, ThrowingPushLeavesQueueUsable) {
     auto q = queue_type(4);
     auto item = item_type{-1};
 
-    custom_throwing_assign_type::throw_on_assign = true;
-    EXPECT_THROW(q.try_push(item_type{1}), std::runtime_error);
-    const auto lvalue = item_type{2};
+    auto rvalue = item_type{1};
+    rvalue.set_throw_on_assign(true);
+    EXPECT_THROW(q.try_push(std::move(rvalue)), std::runtime_error);
+    auto lvalue = item_type{2};
+    lvalue.set_throw_on_assign(true);
     EXPECT_THROW(q.try_push(lvalue), std::runtime_error);
-    custom_throwing_assign_type::throw_on_assign = false;
 
     // failed pushes must not publish anything
     EXPECT_FALSE(q.try_pop(item));
@@ -449,9 +442,9 @@ TYPED_TEST_P(QueueThrowingTest, ThrowingPopLeavesQueueUsable) {
     ASSERT_TRUE(q.try_push(item_type{1}));
     ASSERT_TRUE(q.try_push(item_type{2}));
 
-    custom_throwing_assign_type::throw_on_assign = true;
+    item.set_throw_on_assign(true);
     EXPECT_THROW(q.try_pop(item), std::runtime_error);
-    custom_throwing_assign_type::throw_on_assign = false;
+    item.set_throw_on_assign(false);
     EXPECT_EQ(item, -1);
 
     // the element must still be in the queue

@@ -8,6 +8,7 @@ add_executable(
   queue_test_common.hpp
   # tests
   detail_bit_test.cpp
+  detail_storage_test.cpp
   v1_queue_test.cpp
   v2_queue_test.cpp
   v3_queue_test.cpp

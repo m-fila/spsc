@@ -3,6 +3,27 @@
 #include <stdexcept>
 #include <utility>
 
+class custom_construction_only_type {
+    public:
+    custom_construction_only_type(int value, int& destruction_count) noexcept
+        : m_value(value), m_destruction_count(destruction_count) {}
+    custom_construction_only_type(const custom_construction_only_type&) =
+        delete;
+    custom_construction_only_type(custom_construction_only_type&&) = delete;
+    custom_construction_only_type& operator=(
+        const custom_construction_only_type&) = delete;
+    custom_construction_only_type& operator=(custom_construction_only_type&&) =
+        delete;
+
+    ~custom_construction_only_type() { ++m_destruction_count; }
+
+    int value() const noexcept { return m_value; }
+
+    private:
+    int m_value;
+    int& m_destruction_count;
+};
+
 class custom_move_only_type {
     public:
     custom_move_only_type() noexcept = default;

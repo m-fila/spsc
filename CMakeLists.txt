@@ -41,6 +41,7 @@ target_sources(
         include/spsc/detail/bit.hpp
         include/spsc/detail/checked_capacity.hpp
         include/spsc/detail/macros.hpp
+        include/spsc/detail/storage.hpp
 )
 spsc_apply_sanitizer(spsc)
 add_library(SPSC::spsc ALIAS spsc)

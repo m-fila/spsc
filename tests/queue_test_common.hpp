@@ -372,8 +372,7 @@ REGISTER_TYPED_TEST_SUITE_P(QueueAllocatorTest, UsesProvidedAllocator,
 #define SPSC_INSTANTIATE_QUEUE_TESTS(queue_template, prefix)              \
     using QueueTypes =                                                    \
         ::testing::Types<queue_template<int>,                             \
-                         queue_template<custom_move_only_type>,           \
-                         queue_template<custom_copy_only_type>>;          \
+                         queue_template<custom_move_only_type>>;          \
     INSTANTIATE_TYPED_TEST_SUITE_P(prefix, QueueTest, QueueTypes);        \
     using AllocatorQueueTypes = ::testing::Types<                         \
         queue_template<int, std::pmr::polymorphic_allocator<int>>>;       \

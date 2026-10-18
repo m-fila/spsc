@@ -85,11 +85,7 @@ bool queue<T, Allocator>::try_push(T&& item) {
     if (next_head == m_tail) {
         return false;
     }
-    if constexpr (std::is_move_assignable_v<T>) {
-        m_buffer[m_head] = std::move(item);
-    } else {
-        m_buffer[m_head] = item;
-    }
+    m_buffer[m_head] = std::move(item);
     m_head = next_head;
     return true;
 }
@@ -101,11 +97,7 @@ bool queue<T, Allocator>::try_pop(T& item) {
     if (m_head == m_tail) {
         return false;
     }
-    if constexpr (std::is_move_assignable_v<T>) {
-        item = std::move(m_buffer[m_tail]);
-    } else {
-        item = m_buffer[m_tail];
-    }
+    item = std::move(m_buffer[m_tail]);
     // wrap around if needed
     auto next_tail = m_tail + 1;
     if (next_tail == m_buffer.size()) {

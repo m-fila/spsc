@@ -25,12 +25,8 @@ class queue {
 
     std::size_t capacity() const noexcept;
     bool try_push(const T& item) noexcept(std::is_nothrow_copy_assignable_v<T>);
-    bool try_push(T&& item) noexcept(
-        std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
-                                     : std::is_nothrow_copy_assignable_v<T>);
-    bool try_pop(T& item) noexcept(std::is_move_assignable_v<T>
-                                       ? std::is_nothrow_move_assignable_v<T>
-                                       : std::is_nothrow_copy_assignable_v<T>);
+    bool try_push(T&& item) noexcept(std::is_nothrow_move_assignable_v<T>);
+    bool try_pop(T& item) noexcept(std::is_nothrow_move_assignable_v<T>);
 
     private:
     std::vector<T, Allocator> m_buffer;
@@ -77,8 +73,7 @@ bool queue<T, Allocator>::try_push(const T& item) noexcept(
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) noexcept(
-    std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
-                                 : std::is_nothrow_copy_assignable_v<T>) {
+    std::is_nothrow_move_assignable_v<T>) {
     // wrap around if needed
     const auto head = m_head.load(std::memory_order_acquire);
     auto next_head = head + 1;
@@ -89,29 +84,20 @@ bool queue<T, Allocator>::try_push(T&& item) noexcept(
     if (next_head == m_tail.load(std::memory_order_acquire)) {
         return false;
     }
-    if constexpr (std::is_move_assignable_v<T>) {
-        m_buffer[head] = std::move(item);
-    } else {
-        m_buffer[head] = item;
-    }
+    m_buffer[head] = std::move(item);
     m_head.store(next_head, std::memory_order_release);
     return true;
 }
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_pop(T& item) noexcept(
-    std::is_move_assignable_v<T> ? std::is_nothrow_move_assignable_v<T>
-                                 : std::is_nothrow_copy_assignable_v<T>) {
+    std::is_nothrow_move_assignable_v<T>) {
     const auto tail = m_tail.load(std::memory_order_acquire);
     // check if empty
     if (m_head.load(std::memory_order_acquire) == tail) {
         return false;
     }
-    if constexpr (std::is_move_assignable_v<T>) {
-        item = std::move(m_buffer[tail]);
-    } else {
-        item = m_buffer[tail];
-    }
+    item = std::move(m_buffer[tail]);
     // wrap around if needed
     auto next_tail = tail + 1;
     if (next_tail == m_buffer.size()) {

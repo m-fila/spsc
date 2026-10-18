@@ -1,9 +1,7 @@
 #pragma once
 
 #include <atomic>
-#include <cassert>
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <new>
 #include <type_traits>
@@ -11,6 +9,7 @@
 #include <vector>
 
 #include "spsc/detail/bit.hpp"
+#include "spsc/detail/checked_capacity.hpp"
 
 namespace spsc {
 namespace v5 {
@@ -21,7 +20,7 @@ class queue {
     using value_type = T;
     using allocator_type = Allocator;
     static constexpr std::size_t max_capacity =
-        detail::max_power2<std::size_t>();
+        detail::max_power2<std::size_t>() - 1;
 
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());
@@ -45,18 +44,14 @@ class queue {
 };
 
 template <typename T, typename Allocator>
-queue<T, Allocator>::queue(std::size_t capacity, const Allocator& allocator)
-    : m_buffer(spsc::detail::next_power2(capacity), allocator),
+queue<T, Allocator>::queue(std::size_t minimal_capacity,
+                           const Allocator& allocator)
+    : m_buffer(spsc::detail::next_power2(spsc::detail::checked_capacity(
+                   minimal_capacity, max_capacity)),
+               allocator),
       m_mask(m_buffer.size() - 1) {
-    assert(capacity > 0);
-    assert(capacity <= max_capacity);
-    assert(capacity + 1 <= m_buffer.max_size());
     static_assert(std::is_default_constructible_v<T>,
                   "T must be default constructible");
-    // overeager check since in principle it could be possible to just construct
-    // the queue but never push/pop anything
-    static_assert(std::is_move_assignable_v<T> || std::is_copy_assignable_v<T>,
-                  "T must be move or copy assignable");
 }
 
 template <typename T, typename Allocator>

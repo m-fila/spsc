@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <cassert>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -9,6 +8,8 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+#include "spsc/detail/checked_capacity.hpp"
 
 namespace spsc {
 namespace v4 {
@@ -43,16 +44,10 @@ class queue {
 
 template <typename T, typename Allocator>
 queue<T, Allocator>::queue(std::size_t capacity, const Allocator& allocator)
-    : m_buffer(capacity + 1, allocator) {
-    assert(capacity > 0);
-    assert(capacity <= max_capacity);
-    assert(capacity + 1 <= m_buffer.max_size());
+    : m_buffer(detail::checked_capacity(capacity, max_capacity) + 1,
+               allocator) {
     static_assert(std::is_default_constructible_v<T>,
                   "T must be default constructible");
-    // overeager check since in principle it could be possible to just construct
-    // the queue but never push/pop anything
-    static_assert(std::is_move_assignable_v<T> || std::is_copy_assignable_v<T>,
-                  "T must be move or copy assignable");
 }
 
 template <typename T, typename Allocator>

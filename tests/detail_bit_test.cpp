@@ -6,11 +6,11 @@
 #include "spsc/detail/bit.hpp"
 
 TEST(DetailsBit, MaxPower2) {
-    static_assert(spsc::detail::max_power2<std::uint8_t>() == 0x80);
-    static_assert(spsc::detail::max_power2<std::uint16_t>() == 0x8000);
-    static_assert(spsc::detail::max_power2<std::uint32_t>() == 0x80000000);
+    static_assert(spsc::detail::max_power2<std::uint8_t>() == 0x80ull);
+    static_assert(spsc::detail::max_power2<std::uint16_t>() == 0x8000ull);
+    static_assert(spsc::detail::max_power2<std::uint32_t>() == 0x80000000ull);
     static_assert(spsc::detail::max_power2<std::uint64_t>() ==
-                  0x8000000000000000);
+                  0x8000000000000000ull);
 }
 
 TEST(DetailsBit, NextPower2) {

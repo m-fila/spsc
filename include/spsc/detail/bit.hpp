@@ -17,7 +17,7 @@ template <typename T>
 T next_power2(T n) {
     static_assert(std::is_unsigned_v<T>, "T must be an unsigned type");
     const auto max_value = max_power2<T>();
-    if (n > max_value) {
+    if (n >= max_value) {
         throw std::overflow_error(
             "the input value is too large to compute the next power of 2");
     }

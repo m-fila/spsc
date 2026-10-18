@@ -37,6 +37,7 @@ target_sources(
         include/spsc/v4/queue.hpp
         include/spsc/v5/queue.hpp
         include/spsc/detail/bit.hpp
+        include/spsc/detail/checked_capacity.hpp
         include/spsc/detail/macros.hpp
 )
 spsc_apply_sanitizer(spsc)

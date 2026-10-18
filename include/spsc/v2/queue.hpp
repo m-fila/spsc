@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "spsc/detail/checked_capacity.hpp"
+#include "spsc/detail/wrap_index.hpp"
 
 namespace spsc {
 namespace v2 {
@@ -73,10 +74,7 @@ bool queue<T, Allocator>::try_push_impl(U&& item) noexcept(
     std::is_nothrow_assignable_v<T&, U&&>) {
     // wrap around if needed
     const auto head = m_head.load();
-    auto next_head = head + 1;
-    if (next_head == m_buffer.size()) {
-        next_head = 0;
-    }
+    const auto next_head = detail::wrap_index(head, m_buffer.size());
     // check if full
     if (next_head == m_tail.load()) {
         return false;
@@ -96,10 +94,7 @@ bool queue<T, Allocator>::try_pop(T& item) noexcept(
     }
     item = std::move(m_buffer[tail]);
     // wrap around if needed
-    auto next_tail = tail + 1;
-    if (next_tail == m_buffer.size()) {
-        next_tail = 0;
-    }
+    const auto next_tail = detail::wrap_index(tail, m_buffer.size());
     m_tail.store(next_tail);
     return true;
 }

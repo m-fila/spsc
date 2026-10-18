@@ -1,1 +1,1 @@
-include("${CMAKE_CURRENT_LIST_DIR}/SPCSTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/SPSCTargets.cmake")

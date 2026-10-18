@@ -43,21 +43,29 @@ The following example shows a basic usage :
 #include <thread>
 #include <iostream>
 
-// Create a new queue
-spsc::queue<int> queue;
+// Create a new queue with a fixed buffer of at least 4 elements
+spsc::queue<int> queue(4);
 
 // Producer
 std::thread producer([&queue]() {
     for (int i = 0; i < 10; ++i) {
-        queue.push(i);
+        while (!queue.try_push(i)) {
+            std::this_thread::yield();
+        }
+        queue.try_push(i);
     }
 });
 
 // Consumer
 std::thread consumer([&queue]() {
     for (int i = 0; i < 10; ++i) {
-        int value = 0;
-        if (queue.pop(value)) {
+        int value = -1;
+        while (!queue.try_pop(value)) {
+            std::this_thread::yield();
+        }
+        if (value != i) {
+            throw std::runtime_error("Unexpected value popped from queue");
+        } else {
             std::cout << "Consumed: " << value << std::endl;
         }
     }

@@ -10,6 +10,7 @@ project(
 
 option(SPSC_BUILD_TESTING "Build the tests of SPSC" TRUE)
 option(SPSC_BUILD_BENCHMARKS "Build the benchmarks of SPSC" TRUE)
+option(SPSC_BUILD_EXAMPLES "Build the examples of SPSC" TRUE)
 option(
   SPSC_USE_SYSTEM_LIBS
   "Use system libraries instead of building them as part of this project"
@@ -18,6 +19,7 @@ option(
 option(SPSC_INSTALL "Install the SPSC library" TRUE)
 
 include(cmake/Sanitizers.cmake) # SPSC_SANITIZER option
+include(cmake/CompileOptions.cmake)
 
 ## Library
 
@@ -42,6 +44,12 @@ target_sources(
 )
 spsc_apply_sanitizer(spsc)
 add_library(SPSC::spsc ALIAS spsc)
+
+## Examples
+
+if(SPSC_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ## Tests
 

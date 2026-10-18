@@ -10,10 +10,7 @@ add_executable(
   v5_queue_benchmark.cpp
 )
 target_link_libraries(spsc_benchmarks PRIVATE benchmark::benchmark_main spsc)
-target_compile_options(
-  spsc_benchmarks
-  PRIVATE -Wall -Werror -Wextra -Wno-interference-size
-)
+spsc_target_compile_options(spsc_benchmarks)
 
 add_custom_target(
   bench

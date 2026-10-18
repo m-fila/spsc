@@ -15,7 +15,9 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "BUILD_TESTING": "ON",
                 "SPSC_BUILD_TESTING": "ON",
-                "SPSC_SANITIZER": "none"
+                "SPSC_SANITIZER": "none",
+                "SPSC_BUILD_BENCHMARKS": "OFF",
+                "SPSC_BUILD_EXAMPLES": "ON"
             }
         },
         {

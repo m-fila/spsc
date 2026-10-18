@@ -13,12 +13,14 @@ add_executable(
   v3_queue_test.cpp
   v4_queue_test.cpp
   v5_queue_test.cpp
+  queue_test.cpp
 )
 
 target_link_libraries(spsc_tests PRIVATE GTest::gtest_main spsc)
-target_compile_options(
-  spsc_tests
-  PRIVATE -Wall -Werror -Wextra -Wno-interference-size
-)
+spsc_target_compile_options(spsc_tests)
 
 gtest_discover_tests(spsc_tests)
+
+if(SPSC_BUILD_EXAMPLES)
+  add_test(NAME spsc_examples_test COMMAND spsc_example)
+endif()

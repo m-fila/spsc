@@ -20,7 +20,7 @@ class queue {
     using value_type = T;
     using allocator_type = Allocator;
     static constexpr std::size_t max_capacity =
-        detail::max_power2<std::size_t>() - 1;
+        detail::max_power2<std::size_t>();
 
     explicit queue(std::size_t capacity,
                    const Allocator& allocator = Allocator());

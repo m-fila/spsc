@@ -257,6 +257,21 @@ TYPED_TEST_P(QueueTest, MT_ProducerConsumerSmallCapacityLvalueRef) {
     }
 }
 
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerPower2Capacity) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(16);
+    run_producer_consumer<false>(queue, 10'000);
+}
+
+TYPED_TEST_P(QueueTest, MT_ProducerConsumerPower2CapacityLvalueRef) {
+    using queue_type = TypeParam;
+    using item_type = typename queue_type::value_type;
+    if constexpr (std::is_copy_assignable_v<item_type>) {
+        auto queue = queue_type(16);
+        run_producer_consumer<true>(queue, 10'000);
+    }
+}
+
 template <bool use_lvalue_push, typename Queue>
 void run_cross_queue_worker(Queue& outgoing_queue, Queue& incoming_queue,
                             int num_items) {
@@ -332,7 +347,9 @@ REGISTER_TYPED_TEST_SUITE_P(
     ST_PushPopCycleLvalueRef, MT_ProducerConsumer, MT_ProducerConsumerLvalueRef,
     MT_ProducerConsumerStress, MT_ProducerConsumerStressLvalueRef,
     MT_ProducerConsumerSmallCapacity, MT_ProducerConsumerSmallCapacityLvalueRef,
-    MT_CrossQueueProducerConsumer, MT_CrossQueueProducerConsumerLvalueRef);
+    MT_ProducerConsumerPower2Capacity,
+    MT_ProducerConsumerPower2CapacityLvalueRef, MT_CrossQueueProducerConsumer,
+    MT_CrossQueueProducerConsumerLvalueRef);
 
 template <typename T>
 class QueueAllocatorTest : public ::testing::Test {};

@@ -14,23 +14,31 @@ TEST(DetailsBit, MaxPower2) {
 }
 
 TEST(DetailsBit, NextPower2) {
-    EXPECT_EQ(spsc::detail::next_power2(std::size_t(0)), std::size_t(2));
-    EXPECT_EQ(spsc::detail::next_power2(std::size_t(1)), std::size_t(2));
-    EXPECT_EQ(spsc::detail::next_power2(std::size_t(2)), std::size_t(4));
+    EXPECT_EQ(spsc::detail::next_power2(std::size_t(0)), std::size_t(1));
+    EXPECT_EQ(spsc::detail::next_power2(std::size_t(1)), std::size_t(1));
+    EXPECT_EQ(spsc::detail::next_power2(std::size_t(2)), std::size_t(2));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(3)), std::size_t(4));
-    EXPECT_EQ(spsc::detail::next_power2(std::size_t(4)), std::size_t(8));
+    EXPECT_EQ(spsc::detail::next_power2(std::size_t(4)), std::size_t(4));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(5)), std::size_t(8));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(6)), std::size_t(8));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(7)), std::size_t(8));
-    EXPECT_EQ(spsc::detail::next_power2(std::size_t(8)), std::size_t(16));
+    EXPECT_EQ(spsc::detail::next_power2(std::size_t(8)), std::size_t(8));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(9)), std::size_t(16));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(123)), std::size_t(128));
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(1027)), std::size_t(2048));
     EXPECT_EQ(spsc::detail::next_power2((std::size_t(1) << 14) - 1),
               std::size_t(1) << 14);
     EXPECT_EQ(spsc::detail::next_power2(std::size_t(1) << 14), std::size_t(1)
-                                                                   << 15);
+                                                                   << 14);
+    EXPECT_EQ(spsc::detail::next_power2((std::size_t(1) << 14) + 1),
+              std::size_t(1) << 15);
+    EXPECT_EQ(
+        spsc::detail::next_power2(spsc::detail::max_power2<std::size_t>()),
+        spsc::detail::max_power2<std::size_t>());
+    EXPECT_THROW(
+        spsc::detail::next_power2(spsc::detail::max_power2<std::size_t>() + 1),
+        std::exception);
     EXPECT_THROW(
         spsc::detail::next_power2(std::numeric_limits<std::size_t>::max()),
-        std::overflow_error);
+        std::exception);
 }

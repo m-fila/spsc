@@ -352,6 +352,78 @@ REGISTER_TYPED_TEST_SUITE_P(
     MT_CrossQueueProducerConsumerLvalueRef);
 
 template <typename T>
+class QueueEmplaceTest : public ::testing::Test {};
+
+TYPED_TEST_SUITE_P(QueueEmplaceTest);
+
+TYPED_TEST_P(QueueEmplaceTest, ST_NonDefaultConstructibleNonAssignable) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(2);
+
+    ASSERT_TRUE(queue.emplace(42));
+    const auto output = queue.try_pop();
+
+    ASSERT_TRUE(output.has_value());
+    EXPECT_EQ(*output, 42);
+    EXPECT_FALSE(queue.try_pop().has_value());
+}
+
+TYPED_TEST_P(QueueEmplaceTest, MT_ProducerConsumerEmplaceOptionalPop) {
+    using queue_type = TypeParam;
+    constexpr auto num_items = 100'000;
+    auto queue = queue_type(3);
+
+    auto producer = std::thread([&] {
+        for (int item = 0; item < num_items; ++item) {
+            while (!queue.emplace(item)) {
+                std::this_thread::yield();
+            }
+        }
+    });
+
+    auto consumer = std::thread([&] {
+        for (int expected = 0; expected < num_items; ++expected) {
+            while (true) {
+                auto item = queue.try_pop();
+                if (item) {
+                    EXPECT_EQ(*item, expected);
+                    break;
+                }
+                std::this_thread::yield();
+            }
+        }
+    });
+
+    producer.join();
+    consumer.join();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(QueueEmplaceTest,
+                            ST_NonDefaultConstructibleNonAssignable,
+                            MT_ProducerConsumerEmplaceOptionalPop);
+
+template <typename T>
+class QueueConstructionThrowTest : public ::testing::Test {};
+
+TYPED_TEST_SUITE_P(QueueConstructionThrowTest);
+
+TYPED_TEST_P(QueueConstructionThrowTest, ThrowingEmplaceLeavesQueueUsable) {
+    using queue_type = TypeParam;
+    auto queue = queue_type(2);
+
+    EXPECT_THROW(queue.emplace(42, true), std::runtime_error);
+    EXPECT_FALSE(queue.try_pop().has_value());
+
+    ASSERT_TRUE(queue.emplace(43));
+    const auto output = queue.try_pop();
+    ASSERT_TRUE(output.has_value());
+    EXPECT_EQ(*output, 43);
+}
+
+REGISTER_TYPED_TEST_SUITE_P(QueueConstructionThrowTest,
+                            ThrowingEmplaceLeavesQueueUsable);
+
+template <typename T>
 class QueueAllocatorTest : public ::testing::Test {};
 
 TYPED_TEST_SUITE_P(QueueAllocatorTest);
@@ -474,3 +546,26 @@ REGISTER_TYPED_TEST_SUITE_P(QueueThrowingTest, ThrowingPushLeavesQueueUsable,
         ::testing::Types<queue_template<custom_throwing_assign_type>>;        \
     INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Throwing, QueueThrowingTest,       \
                                    ThrowingQueueTypes)
+
+#define SPSC_INSTANTIATE_STORAGE_QUEUE_TESTS(queue_template, prefix)           \
+    using QueueTypes =                                                         \
+        ::testing::Types<queue_template<int>,                                  \
+                         queue_template<custom_move_only_type>>;               \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix, QueueTest, QueueTypes);             \
+    using AllocatorQueueTypes = ::testing::Types<                              \
+        queue_template<int, std::pmr::polymorphic_allocator<int>>>;            \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Allocator, QueueAllocatorTest,      \
+                                   AllocatorQueueTypes);                       \
+    using DestructionQueueTypes =                                              \
+        ::testing::Types<queue_template<custom_tracked_type>>;                 \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Destruction, QueueDestructionTest,  \
+                                   DestructionQueueTypes);                     \
+    using EmplaceQueueTypes =                                                  \
+        ::testing::Types<queue_template<custom_move_constructible_only_type>>; \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##Emplace, QueueEmplaceTest,          \
+                                   EmplaceQueueTypes);                         \
+    using ConstructionThrowQueueTypes =                                        \
+        ::testing::Types<queue_template<custom_throwing_construct_type>>;      \
+    INSTANTIATE_TYPED_TEST_SUITE_P(prefix##ConstructionThrowing,               \
+                                   QueueConstructionThrowTest,                 \
+                                   ConstructionThrowQueueTypes)

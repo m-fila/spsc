@@ -15,6 +15,8 @@ add_executable(
   v3_queue_test.cpp
   v4_queue_test.cpp
   v5_queue_test.cpp
+  v6_queue_test.cpp
+  v7_queue_test.cpp
   queue_test.cpp
 )
 

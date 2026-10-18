@@ -8,6 +8,8 @@ add_executable(
   v3_queue_benchmark.cpp
   v4_queue_benchmark.cpp
   v5_queue_benchmark.cpp
+  v6_queue_benchmark.cpp
+  v7_queue_benchmark.cpp
   queue_benchmark.cpp
 )
 target_link_libraries(spsc_benchmarks PRIVATE benchmark::benchmark_main spsc)

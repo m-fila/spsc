@@ -12,6 +12,11 @@
 
 namespace spsc {
 namespace v1 {
+/// Single-producer single-consumer bounded queue.
+///
+/// Baseline version: protects the ring buffer with a mutex.
+/// Circular buffer is used to store the items. The buffer is allocated with a
+/// size of capacity + 1 to distinguish between full and empty states.
 template <typename T, typename Allocator = std::allocator<T>>
 class queue {
     public:
@@ -36,6 +41,9 @@ class queue {
     std::vector<T, Allocator> m_buffer;
     std::size_t m_head = 0u;
     std::size_t m_tail = 0u;
+
+    template <typename U>
+    bool try_push_impl(U&& item);
 };
 
 template <typename T, typename Allocator>
@@ -53,23 +61,17 @@ std::size_t queue<T, Allocator>::capacity() const noexcept {
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(const T& item) {
-    auto lock = std::lock_guard(m_mtx);
-    // wrap around if needed
-    auto next_head = m_head + 1;
-    if (next_head == m_buffer.size()) {
-        next_head = 0;
-    }
-    // check if full
-    if (next_head == m_tail) {
-        return false;
-    }
-    m_buffer[m_head] = item;
-    m_head = next_head;
-    return true;
+    return try_push_impl(item);
 }
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) {
+    return try_push_impl(std::move(item));
+}
+
+template <typename T, typename Allocator>
+template <typename U>
+bool queue<T, Allocator>::try_push_impl(U&& item) {
     auto lock = std::lock_guard(m_mtx);
     // wrap around if needed
     auto next_head = m_head + 1;
@@ -80,7 +82,7 @@ bool queue<T, Allocator>::try_push(T&& item) {
     if (next_head == m_tail) {
         return false;
     }
-    m_buffer[m_head] = std::move(item);
+    m_buffer[m_head] = std::forward<U>(item);
     m_head = next_head;
     return true;
 }

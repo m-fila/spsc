@@ -13,6 +13,11 @@
 
 namespace spsc {
 namespace v5 {
+/// Single-producer single-consumer bounded queue.
+///
+/// Based on v4 but uses power-of-two capacity and monotonic indices for
+/// mask-based indexing. The capacity will be automatically rounded up to the
+/// next power of two based on the specified value.
 template <typename T, typename Allocator = std::allocator<T>>
 
 class queue {
@@ -41,6 +46,10 @@ class queue {
         m_saved_head = 0u;
     alignas(std::hardware_destructive_interference_size) std::size_t
         m_saved_tail = 0u;
+
+    template <typename U>
+    bool try_push_impl(U&& item) noexcept(
+        std::is_nothrow_assignable_v<T&, U&&>);
 };
 
 template <typename T, typename Allocator>
@@ -62,22 +71,19 @@ std::size_t queue<T, Allocator>::capacity() const noexcept {
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(const T& item) noexcept(
     std::is_nothrow_copy_assignable_v<T>) {
-    const auto head = m_head.load(std::memory_order_relaxed);
-    // check if full
-    if (head - m_saved_tail == m_buffer.size()) {
-        m_saved_tail = m_tail.load(std::memory_order_acquire);
-        if (head - m_saved_tail == m_buffer.size()) {
-            return false;
-        }
-    }
-    m_buffer[head & m_mask] = item;
-    m_head.store(head + 1, std::memory_order_release);
-    return true;
+    return try_push_impl(item);
 }
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) noexcept(
     std::is_nothrow_move_assignable_v<T>) {
+    return try_push_impl(std::move(item));
+}
+
+template <typename T, typename Allocator>
+template <typename U>
+bool queue<T, Allocator>::try_push_impl(U&& item) noexcept(
+    std::is_nothrow_assignable_v<T&, U&&>) {
     const auto head = m_head.load(std::memory_order_relaxed);
     // check if full
     if (head - m_saved_tail == m_buffer.size()) {
@@ -86,7 +92,7 @@ bool queue<T, Allocator>::try_push(T&& item) noexcept(
             return false;
         }
     }
-    m_buffer[head & m_mask] = std::move(item);
+    m_buffer[head & m_mask] = std::forward<U>(item);
     m_head.store(head + 1, std::memory_order_release);
     return true;
 }

@@ -10,7 +10,7 @@ The supported operations are `try_push` and `try_pop`, which are non-blocking an
 
 The operations are thread-safe when called concurrently from a single producer thread allowed to use `try_push` operations and a single consumer thread allowed to use `try_pop` operations. The queue must not be accessed from multiple producer or consumer threads.
 
-The queue does not provide any closing mechanism, so the producer and consumer must externally coordinate the stopping of the queue.
+The queue does not provide any closing mechanism, so the producer and consumer must externally coordinate the stopping of the queue. The queue does not provide any observer mechanism to indicate whether it is empty or full or to indicate the number of items in the queue. The queue provides a `capacity()` method to query the maximum number of items that can be stored in the queue which remains constant throughout the lifetime of the queue.
 
 The elements of the queue must be default-constructible and should be move-assignable. The assignment can throw but should leave the object in a valid state. The items left in the queue when it is destroyed will be destroyed as well.
 

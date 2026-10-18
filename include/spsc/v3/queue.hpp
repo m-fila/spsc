@@ -12,8 +12,11 @@
 
 namespace spsc {
 namespace v3 {
+/// Single-producer single-consumer bounded queue.
+///
+/// Changes the memory ordering of v2's atomic index operations to
+/// acquire/release.
 template <typename T, typename Allocator = std::allocator<T>>
-
 class queue {
     public:
     using value_type = T;
@@ -33,6 +36,10 @@ class queue {
     std::vector<T, Allocator> m_buffer;
     std::atomic<std::size_t> m_head = 0u;
     std::atomic<std::size_t> m_tail = 0u;
+
+    template <typename U>
+    bool try_push_impl(U&& item) noexcept(
+        std::is_nothrow_assignable_v<T&, U&&>);
 };
 
 template <typename T, typename Allocator>
@@ -51,24 +58,19 @@ std::size_t queue<T, Allocator>::capacity() const noexcept {
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(const T& item) noexcept(
     std::is_nothrow_copy_assignable_v<T>) {
-    // wrap around if needed
-    const auto head = m_head.load(std::memory_order_acquire);
-    auto next_head = head + 1;
-    if (next_head == m_buffer.size()) {
-        next_head = 0;
-    }
-    // check if full
-    if (next_head == m_tail.load(std::memory_order_acquire)) {
-        return false;
-    }
-    m_buffer[head] = item;
-    m_head.store(next_head, std::memory_order_release);
-    return true;
+    return try_push_impl(item);
 }
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) noexcept(
     std::is_nothrow_move_assignable_v<T>) {
+    return try_push_impl(std::move(item));
+}
+
+template <typename T, typename Allocator>
+template <typename U>
+bool queue<T, Allocator>::try_push_impl(U&& item) noexcept(
+    std::is_nothrow_assignable_v<T&, U&&>) {
     // wrap around if needed
     const auto head = m_head.load(std::memory_order_acquire);
     auto next_head = head + 1;
@@ -79,7 +81,7 @@ bool queue<T, Allocator>::try_push(T&& item) noexcept(
     if (next_head == m_tail.load(std::memory_order_acquire)) {
         return false;
     }
-    m_buffer[head] = std::move(item);
+    m_buffer[head] = std::forward<U>(item);
     m_head.store(next_head, std::memory_order_release);
     return true;
 }

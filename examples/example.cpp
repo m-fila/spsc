@@ -1,7 +1,8 @@
 #include <iostream>
-#include "spsc/spsc.hpp"
 #include <stdexcept>
 #include <thread>
+
+#include "spsc/spsc.hpp"
 
 int main() {
     // Create a new queue with a fixed buffer of at least 4 elements

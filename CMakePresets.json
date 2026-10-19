@@ -16,7 +16,7 @@
                 "BUILD_TESTING": "ON",
                 "SPSC_BUILD_TESTING": "ON",
                 "SPSC_SANITIZER": "none",
-                "SPSC_BUILD_BENCHMARKS": "OFF",
+                "SPSC_BUILD_BENCHMARKS": "ON",
                 "SPSC_BUILD_EXAMPLES": "ON"
             }
         },

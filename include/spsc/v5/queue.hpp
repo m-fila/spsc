@@ -22,6 +22,9 @@ namespace v5 {
 template <typename T, typename Allocator = std::allocator<T>>
 
 class queue {
+    static_assert(std::is_object_v<T> && std::is_same_v<T, std::remove_cv_t<T>>,
+                  "T must be a cv-unqualified object type");
+
     public:
     using value_type = T;
     using allocator_type = Allocator;

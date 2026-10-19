@@ -12,6 +12,8 @@ policy uses `spsc::v6::queue`.
 
 The library provides a bounded single-producer single-consumer queue. The queue was designed to be efficient and safe while staying generic enough to support a wide range of types. The queue is implemented as a circular buffer with capacity fixed at construction time and cannot be changed afterwards. A compile-time policy can be used to select whether the queue's capacity will be exact to the requested size or rounded up to the next power of two. The capacity must be greater than zero and smaller or equal to `max_capacity`. The queue accepts an allocator to customize the memory allocation strategy.
 
+`T` must be a cv-unqualified object type; references and `const`/`volatile`-qualified types are not valid queue element types.
+
 Items are appended at the back and removed from the front. `try_push(const T&)` copies an item into the queue and requires `T` to be copy-constructible; `try_push(T&&)` moves an item into the queue and requires `T` to be move-constructible. `emplace(args...)` constructs an item directly from the supplied arguments. Push and emplace return `false` when the queue is full.
 
 `try_pop()` returns a `std::optional<T>` containing the front item, or an empty optional when the queue is empty; it requires `T` to be move-constructible. `try_pop(T&)` moves the front item into the supplied object and returns `true`, or returns `false` when the queue is empty; it requires `T` to be move-assignable.

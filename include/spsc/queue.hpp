@@ -15,7 +15,7 @@ enum class capacity_policy {
 
 /// \brief Single-producer single-consumer bounded queue
 ///
-/// \tparam T Element type of the queue.
+/// \tparam T Element type of the queue. Must be a cv-unqualified object type.
 /// \tparam Allocator Allocator type for the queue.
 /// \tparam Policy Capacity policy for the queue.
 ///

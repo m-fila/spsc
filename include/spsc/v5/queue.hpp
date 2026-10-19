@@ -50,6 +50,7 @@ class queue {
 
     private:
     std::vector<T, Allocator> m_buffer;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     const std::size_t m_mask;
     alignas(std::hardware_destructive_interference_size)
         std::atomic<std::size_t> m_head = 0u;
@@ -105,6 +106,7 @@ bool queue<T, Allocator>::try_push_impl(U&& item) noexcept(
             return false;
         }
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
     m_buffer[head & m_mask] = std::forward<U>(item);
     m_head.store(head + 1, std::memory_order_release);
     return true;
@@ -121,6 +123,7 @@ bool queue<T, Allocator>::try_pop(T& item) noexcept(
             return false;
         }
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
     item = std::move(m_buffer[tail & m_mask]);
     m_tail.store(tail + 1, std::memory_order_release);
     return true;

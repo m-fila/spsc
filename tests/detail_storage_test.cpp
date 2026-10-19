@@ -18,10 +18,10 @@ TEST(DetailStorage, ConstructsAndDestroysElementsInAllocatedSlots) {
             slots(2, allocator);
 
         EXPECT_EQ(slots.capacity(), 2);
-        EXPECT_EQ(resource.allocations, 1);
+        EXPECT_EQ(resource.get_allocations(), 1);
 
         slots.construct(1, 42, destruction_count);
-        EXPECT_EQ(slots[1].value(), 42);
+        EXPECT_EQ(slots[1].value(), 42);  // NOLINT
         EXPECT_EQ(destruction_count, 0);
 
         slots.destroy(1);
@@ -41,7 +41,7 @@ TEST(DetailStorage, WorksWithStdAllocator) {
                                              allocator_type>(1, allocator);
 
         storage.construct(0, 42, destruction_count);
-        EXPECT_EQ(storage[0].value(), 42);
+        EXPECT_EQ(storage[0].value(), 42);  // NOLINT
         storage.destroy(0);
         EXPECT_EQ(destruction_count, 1);
     }

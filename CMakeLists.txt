@@ -42,7 +42,6 @@ target_sources(
         include/spsc/v7/queue.hpp
         include/spsc/detail/bit.hpp
         include/spsc/detail/checked_capacity.hpp
-        include/spsc/detail/macros.hpp
         include/spsc/detail/storage.hpp
         include/spsc/detail/wrap_index.hpp
 )

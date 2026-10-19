@@ -431,28 +431,28 @@ TYPED_TEST_SUITE_P(QueueAllocatorTest);
 TYPED_TEST_P(QueueAllocatorTest, UsesProvidedAllocator) {
     using queue_type = TypeParam;
     auto resource = counting_memory_resource();
-    ASSERT_EQ(resource.allocations, 0);
+    ASSERT_EQ(resource.get_allocations(), 0);
     auto allocator = std::pmr::polymorphic_allocator<int>(&resource);
     auto q = queue_type(8, allocator);
-    ASSERT_EQ(resource.allocations, 1);
+    ASSERT_EQ(resource.get_allocations(), 1);
 }
 
 TYPED_TEST_P(QueueAllocatorTest, NoExtraAllocations) {
     using queue_type = TypeParam;
     auto resource = counting_memory_resource();
-    ASSERT_EQ(resource.allocations, 0);
+    ASSERT_EQ(resource.get_allocations(), 0);
     auto q = queue_type(8, &resource);
-    ASSERT_EQ(resource.allocations, 1);
+    ASSERT_EQ(resource.get_allocations(), 1);
     // fully fill the queue
     while (!q.try_push(42)) {
     }
-    ASSERT_EQ(resource.allocations, 1);
+    ASSERT_EQ(resource.get_allocations(), 1);
     auto item = typename queue_type::value_type{-1};
     EXPECT_TRUE(q.try_pop(item));
     EXPECT_EQ(item, 42);
-    ASSERT_EQ(resource.allocations, 1);
+    ASSERT_EQ(resource.get_allocations(), 1);
     EXPECT_TRUE(q.try_push(43));
-    ASSERT_EQ(resource.allocations, 1);
+    ASSERT_EQ(resource.get_allocations(), 1);
 }
 
 REGISTER_TYPED_TEST_SUITE_P(QueueAllocatorTest, UsesProvidedAllocator,

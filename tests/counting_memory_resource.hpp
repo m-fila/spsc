@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <memory_resource>
 
 class counting_memory_resource : public std::pmr::memory_resource {
@@ -8,9 +9,10 @@ class counting_memory_resource : public std::pmr::memory_resource {
             std::pmr::new_delete_resource()) noexcept
         : m_upstream(upstream) {}
 
-    std::size_t allocations = 0;
+    std::size_t get_allocations() const noexcept { return allocations; }
 
     private:
+    std::size_t allocations = 0;
     void* do_allocate(std::size_t bytes, std::size_t alignment) override {
         auto* pointer = m_upstream->allocate(bytes, alignment);
         ++allocations;

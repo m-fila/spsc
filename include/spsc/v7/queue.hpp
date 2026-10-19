@@ -166,8 +166,10 @@ bool queue<T, Allocator>::try_pop_impl(Output& output) noexcept(
     }
     const auto index = tail & m_mask;
     if constexpr (std::is_same_v<Output, std::optional<T>>) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         output.emplace(std::move(m_buffer[index]));
     } else {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         output = std::move(m_buffer[index]);
     }
     m_buffer.destroy(index);

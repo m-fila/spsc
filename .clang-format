@@ -2,10 +2,11 @@
 BasedOnStyle: Google
 IndentWidth: 4
 Language: Cpp
-AllowShortBlocksOnASingleLine: false
+Standard: c++17
+AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 PointerAlignment: Left
 ColumnLimit: 80

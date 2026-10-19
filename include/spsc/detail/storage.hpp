@@ -6,7 +6,7 @@
 #include <utility>
 
 namespace spsc::detail {
-
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 /// Owns raw allocator-backed storage with explicitly managed element lifetimes.
 template <typename T, typename Allocator>
 class storage {
@@ -53,5 +53,6 @@ class storage {
     T* m_data;
     const std::size_t m_capacity;
 };
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 }  // namespace spsc::detail

@@ -92,6 +92,7 @@ bool queue<T, Allocator>::try_push_impl(U&& item) noexcept(
     if (next_head == m_tail.load()) {
         return false;
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
     m_buffer[head] = std::forward<U>(item);
     m_head.store(next_head);
     return true;
@@ -105,6 +106,7 @@ bool queue<T, Allocator>::try_pop(T& item) noexcept(
     if (m_head.load() == tail) {
         return false;
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
     item = std::move(m_buffer[tail]);
     // wrap around if needed
     const auto next_tail = detail::wrap_index(tail, m_buffer.size());

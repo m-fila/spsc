@@ -163,8 +163,10 @@ bool queue<T, Allocator>::try_pop_impl(Output& output) noexcept(
         }
     }
     if constexpr (std::is_same_v<Output, std::optional<T>>) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         output.emplace(std::move(m_buffer[tail]));
     } else {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         output = std::move(m_buffer[tail]);
     }
     m_buffer.destroy(tail);

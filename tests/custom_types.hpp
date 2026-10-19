@@ -33,6 +33,7 @@ class custom_move_only_type {
     custom_move_only_type& operator=(const custom_move_only_type&) = delete;
     custom_move_only_type& operator=(custom_move_only_type&& other) noexcept =
         default;
+    ~custom_move_only_type() = default;
 
     bool operator==(const custom_move_only_type& other) const {
         return m_value == other.m_value;
@@ -65,6 +66,7 @@ class custom_move_constructible_only_type {
         const custom_move_constructible_only_type&) = delete;
     custom_move_constructible_only_type& operator=(
         custom_move_constructible_only_type&& other) = delete;
+    ~custom_move_constructible_only_type() = default;
 
     bool operator==(const custom_move_constructible_only_type& other) const {
         return m_value == other.m_value;
@@ -104,6 +106,7 @@ class custom_throwing_construct_type {
         const custom_throwing_construct_type&) = delete;
     custom_throwing_construct_type& operator=(
         custom_throwing_construct_type&&) = delete;
+    ~custom_throwing_construct_type() = default;
 
     bool operator==(int other) const { return m_value == other; }
 
@@ -136,6 +139,7 @@ class custom_throwing_assign_type {
         m_value = std::move(other.m_value);
         return *this;
     }
+    ~custom_throwing_assign_type() = default;
 
     bool operator==(const custom_throwing_assign_type& other) const {
         return m_value == other.m_value;

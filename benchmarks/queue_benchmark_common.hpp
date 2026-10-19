@@ -42,7 +42,7 @@ inline static void BM(benchmark::State& state) {
 
     state.SetItemsProcessed(state.iterations() * n_iters);
 }
-
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define SPSC_REGISTER_QUEUE_BENCHMARK(queue_type) \
     BENCHMARK(BM<queue_type<int>>)                \
         ->Args({1'000, 1})                        \

@@ -4,9 +4,9 @@ Example implementation of a bounded single-producer single-consumer queue in C++
 
 This project contains several queue implementations (`spsc::v1::queue`,
 `spsc::v2::queue` etc.) that show successive stages of optimization and interface changes. For general
-use, prefer `spsc::queue` from `spsc/queue.hpp`; its default minimum-capacity
-policy uses the final implementation, `spsc::v7::queue`. The exact-capacity
-policy uses `spsc::v6::queue`.
+use, prefer `spsc::queue` from [`spsc/queue.hpp`](include/spsc/queue.hpp); its default minimum-capacity
+policy uses the [`spsc::v7::queue`](include/spsc/v7/queue.hpp) implementation, the exact-capacity
+policy uses [`spsc::v6::queue`](include/spsc/v6/queue.hpp) implementation.
 
 ## Features
 

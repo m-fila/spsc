@@ -9,7 +9,7 @@ add_executable(
   # tests
   detail_bit_test.cpp
   detail_storage_test.cpp
-  detail_wrap_index_test.cpp
+  detail_iterate_and_wrap_test.cpp
   v1_queue_test.cpp
   v2_queue_test.cpp
   v3_queue_test.cpp

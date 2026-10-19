@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "spsc/detail/checked_capacity.hpp"
+#include "spsc/detail/iterate_and_wrap.hpp"
 #include "spsc/detail/storage.hpp"
-#include "spsc/detail/wrap_index.hpp"
 
 namespace spsc {
 namespace v6 {
@@ -93,7 +93,7 @@ queue<T, Allocator>::~queue() {
     const auto head = m_head.load(std::memory_order_relaxed);
     while (tail != head) {
         m_buffer.destroy(tail);
-        tail = detail::wrap_index(tail, m_buffer.capacity());
+        tail = detail::iterate_and_wrap(tail, m_buffer.capacity());
     }
 }
 
@@ -119,7 +119,7 @@ template <typename... Args>
 bool queue<T, Allocator>::try_emplace(Args&&... args) noexcept(
     std::is_nothrow_constructible_v<T, Args&&...>) {
     const auto head = m_head.load(std::memory_order_relaxed);
-    const auto next_head = detail::wrap_index(head, m_buffer.capacity());
+    const auto next_head = detail::iterate_and_wrap(head, m_buffer.capacity());
     // check if full
     if (next_head == m_saved_tail) {
         m_saved_tail = m_tail.load(std::memory_order_acquire);
@@ -170,7 +170,7 @@ bool queue<T, Allocator>::try_pop_impl(Output& output) noexcept(
         output = std::move(m_buffer[tail]);
     }
     m_buffer.destroy(tail);
-    m_tail.store(detail::wrap_index(tail, m_buffer.capacity()),
+    m_tail.store(detail::iterate_and_wrap(tail, m_buffer.capacity()),
                  std::memory_order_release);
     return true;
 }

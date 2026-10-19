@@ -43,7 +43,7 @@ target_sources(
         include/spsc/detail/bit.hpp
         include/spsc/detail/checked_capacity.hpp
         include/spsc/detail/storage.hpp
-        include/spsc/detail/wrap_index.hpp
+        include/spsc/detail/iterate_and_wrap.hpp
 )
 spsc_apply_sanitizer(spsc)
 add_library(SPSC::spsc ALIAS spsc)

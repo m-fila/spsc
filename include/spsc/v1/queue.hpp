@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "spsc/detail/checked_capacity.hpp"
-#include "spsc/detail/wrap_index.hpp"
+#include "spsc/detail/iterate_and_wrap.hpp"
 
 namespace spsc {
 namespace v1 {
@@ -88,7 +88,7 @@ template <typename U>
 bool queue<T, Allocator>::try_push_impl(U&& item) {
     auto lock = std::lock_guard(m_mtx);
     // wrap around if needed
-    const auto next_head = detail::wrap_index(m_head, m_buffer.size());
+    const auto next_head = detail::iterate_and_wrap(m_head, m_buffer.size());
     // check if full
     if (next_head == m_tail) {
         return false;
@@ -109,7 +109,7 @@ bool queue<T, Allocator>::try_pop(T& item) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
     item = std::move(m_buffer[m_tail]);
     // wrap around if needed
-    const auto next_tail = detail::wrap_index(m_tail, m_buffer.size());
+    const auto next_tail = detail::iterate_and_wrap(m_tail, m_buffer.size());
     m_tail = next_tail;
     return true;
 }

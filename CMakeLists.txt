@@ -117,7 +117,7 @@ option(
 unset(SPSC_USE_SYSTEM_BENCHMARK_DEFAULT)
 if(SPSC_SETUP_BENCHMARK)
   if(SPSC_USE_SYSTEM_BENCHMARK)
-    find_package(Benchmark REQUIRED)
+    find_package(benchmark REQUIRED)
   else()
     add_subdirectory(deps/benchmark)
   endif()

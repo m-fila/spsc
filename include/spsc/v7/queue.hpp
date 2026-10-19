@@ -42,10 +42,11 @@ class queue {
 
     /// Returns the usable queue capacity.
     std::size_t capacity() const noexcept;
-    /// Constructs an item at the back; returns false if full.
+    /// Constructs an item at the back; returns false if full without
+    /// constructing the item.
     /// Requires T constructible from the supplied arguments.
     template <typename... Args>
-    bool emplace(Args&&... args) noexcept(
+    bool try_emplace(Args&&... args) noexcept(
         std::is_nothrow_constructible_v<T, Args&&...>);
     /// Copies an item to the back; returns false if full.
     /// Requires copy-constructible T.
@@ -107,18 +108,18 @@ std::size_t queue<T, Allocator>::capacity() const noexcept {
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(const T& item) noexcept(
     std::is_nothrow_constructible_v<T, const T&>) {
-    return emplace(item);
+    return try_emplace(item);
 }
 
 template <typename T, typename Allocator>
 bool queue<T, Allocator>::try_push(T&& item) noexcept(
     std::is_nothrow_constructible_v<T, T&&>) {
-    return emplace(std::move(item));
+    return try_emplace(std::move(item));
 }
 
 template <typename T, typename Allocator>
 template <typename... Args>
-bool queue<T, Allocator>::emplace(Args&&... args) noexcept(
+bool queue<T, Allocator>::try_emplace(Args&&... args) noexcept(
     std::is_nothrow_constructible_v<T, Args&&...>) {
     const auto head = m_head.load(std::memory_order_relaxed);
     // check if full

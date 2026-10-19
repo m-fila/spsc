@@ -360,7 +360,7 @@ TYPED_TEST_P(QueueEmplaceTest, ST_NonDefaultConstructibleNonAssignable) {
     using queue_type = TypeParam;
     auto queue = queue_type(2);
 
-    ASSERT_TRUE(queue.emplace(42));
+    ASSERT_TRUE(queue.try_emplace(42));
     const auto output = queue.try_pop();
 
     ASSERT_TRUE(output.has_value());
@@ -375,7 +375,7 @@ TYPED_TEST_P(QueueEmplaceTest, MT_ProducerConsumerEmplaceOptionalPop) {
 
     auto producer = std::thread([&] {
         for (int item = 0; item < num_items; ++item) {
-            while (!queue.emplace(item)) {
+            while (!queue.try_emplace(item)) {
                 std::this_thread::yield();
             }
         }
@@ -411,10 +411,10 @@ TYPED_TEST_P(QueueConstructionThrowTest, ThrowingEmplaceLeavesQueueUsable) {
     using queue_type = TypeParam;
     auto queue = queue_type(2);
 
-    EXPECT_THROW(queue.emplace(42, true), std::runtime_error);
+    EXPECT_THROW(queue.try_emplace(42, true), std::runtime_error);
     EXPECT_FALSE(queue.try_pop().has_value());
 
-    ASSERT_TRUE(queue.emplace(43));
+    ASSERT_TRUE(queue.try_emplace(43));
     const auto output = queue.try_pop();
     ASSERT_TRUE(output.has_value());
     EXPECT_EQ(*output, 43);

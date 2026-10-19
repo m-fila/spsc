@@ -30,10 +30,10 @@ enum class capacity_policy {
 /// provide an observer for its current size or empty/full state.
 ///
 /// `try_push(const T&)` requires copy-constructible T, and `try_push(T&&)`
-/// requires move-constructible T. `emplace(args...)` constructs an item from
-/// the supplied arguments. `try_pop()` returns an optional and requires
+/// requires move-constructible T. `try_emplace(args...)` constructs an item
+/// from the supplied arguments. `try_pop()` returns an optional and requires
 /// move-constructible T; `try_pop(T&)` returns bool and requires
-/// move-assignable T. Push and emplace return immediately when the queue is
+/// move-assignable T. Push and try_emplace return immediately when the queue is
 /// full, and pop returns immediately when it is empty.
 template <typename T, typename Allocator = std::allocator<T>,
           capacity_policy Policy = capacity_policy::minimum>

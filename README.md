@@ -14,13 +14,13 @@ The library provides a bounded single-producer single-consumer queue. The queue 
 
 `T` must be a cv-unqualified object type; references and `const`/`volatile`-qualified types are not valid queue element types.
 
-Items are appended at the back and removed from the front. `try_push(const T&)` copies an item into the queue and requires `T` to be copy-constructible; `try_push(T&&)` moves an item into the queue and requires `T` to be move-constructible. `emplace(args...)` constructs an item directly from the supplied arguments. Push and emplace return `false` when the queue is full.
+Items are appended at the back and removed from the front. `try_push(const T&)` copies an item into the queue and requires `T` to be copy-constructible; `try_push(T&&)` moves an item into the queue and requires `T` to be move-constructible. `try_emplace(args...)` constructs an item directly from the supplied arguments. Push and emplace return `false` when the queue is full.
 
 `try_pop()` returns a `std::optional<T>` containing the front item, or an empty optional when the queue is empty; it requires `T` to be move-constructible. `try_pop(T&)` moves the front item into the supplied object and returns `true`, or returns `false` when the queue is empty; it requires `T` to be move-assignable.
 
 Element construction or transfer can throw but should leave the elements in a valid state. If an operation throws, the queue indices are not advanced, so the queued item is not removed.
 
-The queue supports one producer thread performing `try_push` or `emplace` concurrently with one consumer thread performing either `try_pop` overload. It does not support multiple producers or multiple consumers. The producer and consumer must externally coordinate shutdown; destroy the queue only after no thread can access it. The queue does not provide an observer for its current size or empty/full state. Its `capacity()` remains constant throughout its lifetime.
+The queue supports one producer thread performing `try_push` or `try_emplace` concurrently with one consumer thread performing either `try_pop` overload. It does not support multiple producers or multiple consumers. The producer and consumer must externally coordinate shutdown; destroy the queue only after no thread can access it. The queue does not provide an observer for its current size or empty/full state. Its `capacity()` remains constant throughout its lifetime.
 
 ## Requirements
 
